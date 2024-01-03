@@ -10,26 +10,26 @@ import Speech
 class Helper{
     let speech = SFSpeechRecognizer()
     let speechRequest = SFSpeechURLRecognitionRequest(url: URL(filePath:Bundle.main.path(forResource: "sample", ofType: "mp3")!))
-   
     func requestPermission() {
         SFSpeechRecognizer.requestAuthorization {  authStatus in
             DispatchQueue.main.async {
                 if authStatus == .authorized {
-                    print("Good to go!")
+                    print("Now you are authorized")
                 } else {
-                    print("Transcription permission was declined.")
+                    print("You are not authorized to use this service")
                 }
             }
         }
     }
-    func printTextFromAudio() async -> [String]{
-        return await withCheckedContinuation { continuation in
-            speech?.recognitionTask(with: speechRequest, resultHandler: { result, error in
-                    var editorArray:[String] = []
-                    editorArray.append(result!.bestTranscription.formattedString)
-                    continuation.resume(returning: editorArray)
+    func printTextFromAudio(completion:@escaping (String)->()) {
+        DispatchQueue.main.async{
+            self.speech?.recognitionTask(with: self.speechRequest, resultHandler: { result, error in
+                    var editor:String
+                    editor = result!.bestTranscription.formattedString
+                    completion(editor)
             })
         }
+
         
     }
 }

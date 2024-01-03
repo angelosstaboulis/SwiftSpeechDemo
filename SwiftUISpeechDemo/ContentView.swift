@@ -9,16 +9,19 @@ import SwiftUI
 import Speech
 struct ContentView: View {
     @State var editor:String
-    let speech = SFSpeechRecognizer()
-    let speechRequest = SFSpeechURLRecognitionRequest(url: URL(filePath:Bundle.main.path(forResource: "sample", ofType: "mp3")!))
+    var helper = Helper()
     var body: some View {
         VStack {
             TextEditor(text: $editor).colorMultiply(.accentColor)
             Spacer()
             Button {
-                speech?.recognitionTask(with: speechRequest, resultHandler: { result, error in
-                    editor = result!.bestTranscription.formattedString
-                })
+                Task{
+                    helper.printTextFromAudio(completion:
+                    { value in
+                            editor = value
+                        
+                    })
+                }
             } label: {
                 Text("Print Text from Audio")
             }
@@ -26,20 +29,10 @@ struct ContentView: View {
         }
         .padding()
         .onAppear(perform: {
-            requestPermission()
+            helper.requestPermission()
         })
     }
-    func requestPermission() {
-        SFSpeechRecognizer.requestAuthorization {  authStatus in
-            DispatchQueue.main.async {
-                if authStatus == .authorized {
-                    print("Good to go!")
-                } else {
-                    print("Transcription permission was declined.")
-                }
-            }
-        }
-    }
+
 }
 
 #Preview {
